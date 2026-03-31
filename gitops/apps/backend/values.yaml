@@ -1,13 +1,12 @@
 namespace: app
 image:
-  repository: REPLACE_ME
+  repository: 442999092835.dkr.ecr.us-east-1.amazonaws.com/three-tier-backend
   tag: latest
 service:
   port: 8000
 env:
-  MONGO_URI: REPLACE_ME
-  MONGO_DB: three_tier_demo
-  REDIS_URL: redis://redis-master.app.svc.cluster.local:6379/0
-  KAFKA_BOOTSTRAP_SERVERS: kafka-kafka-bootstrap.messaging.svc.cluster.local:9092
-  KAFKA_TOPIC_ORDERS: order.created
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc.cluster.local:4318
+  MONGO_URI: "mongodb+srv://sathish161084_db_user:fGHDhMhOr9XdDVcN@threetierdemo.g2omuau.mongodb.net/?retryWrites=true&w=majority"
+  MONGO_DB: "three_tier_demo"
+  REDIS_URL: "redis://redis-master.app.svc.cluster.local:6379/0"
+  KAFKA_BOOTSTRAP_SERVERS: "three-tier-kafka-kafka-bootstrap.messaging.svc.cluster.local:9092"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector-collector.observability.svc.cluster.local:4318"

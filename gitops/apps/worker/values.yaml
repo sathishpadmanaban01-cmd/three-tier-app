@@ -1,9 +1,9 @@
 namespace: app
 image:
-  repository: REPLACE_ME
+  repository: 442999092835.dkr.ecr.us-east-1.amazonaws.com/three-tier-worker
   tag: latest
 env:
-  MONGO_URI: REPLACE_ME
+  MONGO_URI: mongodb+srv://sathish161084_db_user:fGHDhMhOr9XdDVcN@threetierdemo.g2omuau.mongodb.net/?retryWrites=true&w=majority
   MONGO_DB: three_tier_demo
   KAFKA_BOOTSTRAP_SERVERS: kafka-kafka-bootstrap.messaging.svc.cluster.local:9092
   KAFKA_TOPIC_ORDERS: order.created

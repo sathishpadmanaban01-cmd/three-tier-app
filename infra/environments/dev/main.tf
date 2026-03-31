@@ -13,15 +13,15 @@ module "vpc" {
   public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
 
-  enable_nat_gateway = false
-  single_nat_gateway = false
+  enable_nat_gateway = true
+  single_nat_gateway = true
 
   public_subnet_tags = {
-    "kubernetes.io/role/elb" = 1
+    "kubernetes.io/role/elb" = "1"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
@@ -33,28 +33,61 @@ module "eks" {
   kubernetes_version = "1.33"
 
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = concat(module.vpc.public_subnets, module.vpc.private_subnets)
 
   endpoint_public_access = true
 
+  addons = {
+    coredns    = {}
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
+  }
+
   eks_managed_node_groups = {
     default = {
+      ami_type       = "AL2023_x86_64_STANDARD"
       instance_types = ["t3.large"]
-      min_size       = 2
-      max_size       = 2
-      desired_size   = 2
-      capacity_type  = "ON_DEMAND"
+
+      min_size      = 2
+      max_size      = 2
+      desired_size  = 2
+      capacity_type = "ON_DEMAND"
+
+      subnet_ids = module.vpc.private_subnets
     }
   }
 
   enable_cluster_creator_admin_permissions = true
 }
 
-module "ecr" {
-  source  = "terraform-aws-modules/ecr/aws"
-  version = "~> 3.0"
+resource "aws_ecr_repository" "backend" {
+  name = "three-tier-backend"
+}
 
-  repository_name = "three-tier-backend"
+resource "aws_ecr_lifecycle_policy" "backend" {
+  repository = aws_ecr_repository.backend.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 10 images"
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
+        }
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
 }
 
 resource "aws_ecr_repository" "frontend" {
@@ -102,6 +135,7 @@ resource "aws_cloudfront_distribution" "frontend" {
     target_origin_id = "frontend-s3"
 
     viewer_protocol_policy = "redirect-to-https"
+
     forwarded_values {
       query_string = false
       cookies {
