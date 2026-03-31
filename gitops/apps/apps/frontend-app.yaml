@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/three-tier-starter.git
+    repoURL: https://github.com/sathishpadmanaban01-cmd/three-tier-app.git
     targetRevision: HEAD
     path: gitops/apps/frontend
   destination:
