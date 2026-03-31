@@ -1,0 +1,6 @@
+namespace: app
+image:
+  repository: REPLACE_ME
+  tag: latest
+service:
+  port: 80

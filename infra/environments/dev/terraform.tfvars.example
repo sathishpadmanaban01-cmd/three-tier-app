@@ -1,0 +1,4 @@
+aws_region   = "us-east-1"
+cluster_name = "three-tier-dev"
+github_org   = "your-org"
+github_repo  = "three-tier-app"

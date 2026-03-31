@@ -1,0 +1,9 @@
+namespace: app
+image:
+  repository: REPLACE_ME
+  tag: latest
+env:
+  MONGO_URI: REPLACE_ME
+  MONGO_DB: three_tier_demo
+  KAFKA_BOOTSTRAP_SERVERS: kafka-kafka-bootstrap.messaging.svc.cluster.local:9092
+  KAFKA_TOPIC_ORDERS: order.created

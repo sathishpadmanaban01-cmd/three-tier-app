@@ -1,0 +1,13 @@
+namespace: app
+image:
+  repository: REPLACE_ME
+  tag: latest
+service:
+  port: 8000
+env:
+  MONGO_URI: REPLACE_ME
+  MONGO_DB: three_tier_demo
+  REDIS_URL: redis://redis-master.app.svc.cluster.local:6379/0
+  KAFKA_BOOTSTRAP_SERVERS: kafka-kafka-bootstrap.messaging.svc.cluster.local:9092
+  KAFKA_TOPIC_ORDERS: order.created
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc.cluster.local:4318

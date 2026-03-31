@@ -1,0 +1,43 @@
+name: frontend-ci
+
+on:
+  push:
+    paths:
+      - 'app/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-2
+      ECR_REPOSITORY: three-tier-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install and build
+        working-directory: app/frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          REGISTRY=$ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
+          docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG app/frontend
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
