@@ -8,7 +8,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   build-and-push:
@@ -16,28 +16,52 @@ jobs:
     env:
       AWS_REGION: us-east-1
       ECR_REPOSITORY: three-tier-frontend
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Install and build
         working-directory: app/frontend
         run: |
-          npm ci
+          npm install
           npm run build
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA}" >> "$GITHUB_ENV"
+
       - name: Build and push
-        env:
-          IMAGE_TAG: ${{ github.sha }}
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           REGISTRY=$ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
+
           docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG app/frontend
           docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Update frontend GitOps values
+        run: |
+          sed -i "s|^\([[:space:]]*tag:[[:space:]]*\).*|\1${IMAGE_TAG}|" gitops/apps/frontend/values.yaml
+
+      - name: Commit and push GitOps change
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add gitops/apps/frontend/values.yaml
+          git commit -m "Update frontend image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+          git push
