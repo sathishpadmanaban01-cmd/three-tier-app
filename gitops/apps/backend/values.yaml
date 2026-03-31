@@ -1,7 +1,7 @@
 namespace: app
 image:
   repository: 442999092835.dkr.ecr.us-east-1.amazonaws.com/three-tier-backend
-  tag: latest
+  tag: 3d310ed58f736273598720f0146dc08ce440e040
 service:
   port: 8000
 env:
