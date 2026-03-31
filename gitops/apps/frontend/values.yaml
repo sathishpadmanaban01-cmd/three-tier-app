@@ -1,7 +1,7 @@
 namespace: app
 image:
   repository: 442999092835.dkr.ecr.us-east-1.amazonaws.com/three-tier-frontend
-  tag: latest
+  tag: e7e75edf02513139e2d1b2df3510fabf4672468f
 service:
   port: 80
 env:
